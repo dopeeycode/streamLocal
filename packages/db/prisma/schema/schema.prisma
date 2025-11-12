@@ -1,0 +1,23 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated"
+  moduleFormat = "esm"
+  runtime      = "nodejs"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  title     String
+  filePath  String
+  createdAt DateTime @default(now())
+
+  // Novos campos
+  duration  Float?
+  qualities Json? // {"96k": "/chunks/id/audio-96k/", "160k": "..."}
+  processed Boolean @default(false)
+}
