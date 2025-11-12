@@ -9,16 +9,13 @@
     "**/node_modules": true,
     "**/.turbo": true,
     "**/dist": true,
-    "**/build": true,
-    "apps/server/mnt/data/media/originals": true,
-    "apps/server/mnt/data/media/chunks": true
+    "**/build": true
   },
   "search.exclude": {
     "**/node_modules": true,
     "**/dist": true,
     "**/build": true,
-    "**/.turbo": true,
-    "apps/server/mnt/data/media": true
+    "**/.turbo": true
   },
   "typescript.preferences.includePackageJsonAutoImports": "on",
   "npm.packageManager": "bun",
