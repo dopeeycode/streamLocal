@@ -107,14 +107,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       const cachedDuration = loadFromCache(`streamLocal_duration_${cachedMedia.id}`, 0);
       if (cachedDuration > 0) {
         setDuration(cachedDuration);
-        console.log('UI duration restored immediately to:', cachedDuration);
       }
       
-      // Restore position immediately for UI display
       if (cachedPosition > 0) {
         setCurrentTime(cachedPosition);
-        setPendingSeekTime(cachedPosition); // Mark this position to be restored in audio
-        console.log('UI position restored immediately to:', cachedPosition);
+        setPendingSeekTime(cachedPosition);
       }
     }
     
@@ -127,12 +124,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const audio = audioRef.current;
     
     audio.addEventListener('loadedmetadata', () => {
-      console.log('Real audio duration loaded:', audio.duration);
       setDuration(audio.duration);
-      // Cache duration for each media
       if (currentMedia) {
         saveToCache(`streamLocal_duration_${currentMedia.id}`, audio.duration);
-        console.log('Duration cached for media:', currentMedia.id, audio.duration);
       }
     });
     
@@ -187,13 +181,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       setIsPlaying(false);
     });
 
-    audio.addEventListener('loadstart', () => {
-      console.log('Started loading audio');
-    });
-
-    audio.addEventListener('canplay', () => {
-      console.log('Audio can start playing');
-    });
     
     return () => {
       if (audio) {
@@ -245,7 +232,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (audioRef.current && isHydrated) {
       audioRef.current.volume = volume;
-      console.log('Volume applied to audio element:', volume);
     }
   }, [volume, isHydrated]);
 
@@ -253,7 +239,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (currentMedia && isHydrated && audioRef.current && !audioRef.current.src) {
       const url = getAudioUrl(currentMedia, quality);
-      console.log('Auto-loading cached media:', currentMedia.title, 'URL:', url);
       
       audioRef.current.src = url;
       audioRef.current.volume = volume;
@@ -271,13 +256,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const audio = audioRef.current;
     
     const handleLoadedMetadata = () => {
-      console.log('Audio metadata loaded, checking for pending seek:', pendingSeekTime);
       
       if (pendingSeekTime !== null && pendingSeekTime > 0 && pendingSeekTime < audio.duration) {
-        console.log('Applying pending seek to:', pendingSeekTime);
         audio.currentTime = pendingSeekTime;
-        setPendingSeekTime(null); // Clear the pending seek
-        console.log('Audio position restored to:', pendingSeekTime);
+        setPendingSeekTime(null);
       }
     };
     
@@ -288,27 +270,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     };
   }, [currentMedia, isHydrated]);
 
-  // Remove the old restore position effect
-  // Restore last position when media loads (only after hydration)
-  // useEffect(() => {
-  //   if (currentMedia && audioRef.current && isHydrated) {
-  //     const savedPosition = loadFromCache(CACHE_KEYS.LAST_POSITION, 0);
-  //     if (savedPosition > 0 && savedPosition < duration) {
-  //       audioRef.current.currentTime = savedPosition;
-  //       setCurrentTime(savedPosition);
-  //     }
-  //   }
-  // }, [currentMedia, duration, isHydrated]);
 
   const loadMedia = (media: Media, shouldMinimize = true) => {
     if (!audioRef.current) return;
     
-    console.log('Loading media:', media.title, 'ID:', media.id);
     
     setCurrentMedia(media);
     setPendingSeekTime(null); // Clear any pending seek for new media
     const url = getAudioUrl(media, quality);
-    console.log('Audio URL:', url);
     
     audioRef.current.src = url;
     audioRef.current.volume = volume;
@@ -321,11 +290,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const play = () => {
     if (audioRef.current && currentMedia) {
-      console.log('Attempting to play:', currentMedia.title);
       audioRef.current.play()
-        .then(() => {
-          console.log('Playback started successfully');
-        })
+        
         .catch((error) => {
           console.error('Playback failed:', error);
           setIsPlaying(false);
@@ -372,7 +338,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const currentTimeBackup = audio.currentTime;
     const wasPlaying = !audio.paused;
     
-    console.log('Changing quality to:', newQuality, 'Current time:', currentTimeBackup, 'Was playing:', wasPlaying);
     
     // Pause first to avoid conflicts
     if (wasPlaying) {
@@ -388,7 +353,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     
     // Set up one-time listener for when new audio is ready
     const handleCanPlay = () => {
-      console.log('New quality audio ready, restoring position:', currentTimeBackup);
       audio.currentTime = currentTimeBackup;
       
       if (wasPlaying) {

@@ -114,7 +114,6 @@ export function PlayerSimple({ mediaId }: PlayerProps) {
     setBuffered(0);
     setPlaying(false);
 
-    console.log(`🎵 Carregando qualidade: ${currentQuality}`);
 
     // Event listeners
     const handleTimeUpdate = () => safeSetCurrentTime(audio.currentTime);
@@ -135,10 +134,8 @@ export function PlayerSimple({ mediaId }: PlayerProps) {
       // Usar duração do manifest se disponível e válida, senão usar a do áudio
       if (manifest.duration && manifest.duration > 0 && manifest.duration < 86400) { // max 24h
         safeSetDuration(manifest.duration);
-        console.log(`⏱️ Usando duração do manifest: ${manifest.duration.toFixed(1)}s (${Math.floor(manifest.duration / 60)}:${Math.floor(manifest.duration % 60).toString().padStart(2, '0')})`);
       } else if (audio.duration && isFinite(audio.duration) && audio.duration > 0) {
         safeSetDuration(audio.duration);
-        console.log(`⏱️ Usando duração do áudio: ${audio.duration.toFixed(1)}s (${Math.floor(audio.duration / 60)}:${Math.floor(audio.duration % 60).toString().padStart(2, '0')})`);
       } else {
         console.warn('⚠️ Nenhuma duração válida encontrada');
       }
@@ -167,7 +164,6 @@ export function PlayerSimple({ mediaId }: PlayerProps) {
         try {
           const testResponse = await fetch(concatenatedUrl, { method: 'HEAD' });
           if (testResponse.ok) {
-            console.log("✅ Usando arquivo concatenado");
             audio.src = concatenatedUrl;
             audio.load();
             return;
@@ -177,7 +173,6 @@ export function PlayerSimple({ mediaId }: PlayerProps) {
         }
 
         // Fallback: carregar todos os segmentos e criar blob completo
-        console.log(`🎬 Arquivo concatenado não disponível, carregando segmentos...`);
         setLoadingSegments(true);
         setLoadingProgress(0);
         await loadAllSegments(baseUrl);
@@ -205,7 +200,6 @@ export function PlayerSimple({ mediaId }: PlayerProps) {
             const response = await fetch(segmentUrl);
             if (!response.ok) {
               if (response.status === 404) {
-                console.log(`✅ Carregados ${segmentIndex} segmentos`);
                 hasMore = false;
                 break;
               }
@@ -214,7 +208,6 @@ export function PlayerSimple({ mediaId }: PlayerProps) {
 
             const arrayBuffer = await response.arrayBuffer();
             audioChunks.push(new Uint8Array(arrayBuffer));
-            console.log(`📦 Segmento ${segmentIndex} carregado`);
             
             // Atualizar progresso
             setLoadingProgress(Math.min(90, (segmentIndex + 1) * 2));
@@ -234,7 +227,6 @@ export function PlayerSimple({ mediaId }: PlayerProps) {
         }
 
         // Criar blob completo
-        console.log(`🔧 Montando áudio completo com ${audioChunks.length} segmentos...`);
         setLoadingProgress(95);
         
         const totalLength = audioChunks.reduce((acc, chunk) => acc + chunk.length, 0);
@@ -249,7 +241,6 @@ export function PlayerSimple({ mediaId }: PlayerProps) {
         const blob = new Blob([combined], { type: 'audio/mp4' });
         const audioUrl = URL.createObjectURL(blob);
         
-        console.log(`🎵 Áudio completo criado (${(totalLength / 1024 / 1024).toFixed(2)}MB)`);
         setLoadingProgress(100);
         
         audio.src = audioUrl;
