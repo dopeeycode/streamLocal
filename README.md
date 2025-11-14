@@ -344,43 +344,221 @@ Cada música processada gera um manifest que define todas as informações:
 
 ## 🛠️ Como Instalar e Executar
 
-### Pré-requisitos
-- Node.js 18+
-- PostgreSQL
-- FFmpeg instalado no sistema
-- Docker (opcional)
+### 📋 Pré-requisitos
 
-### Setup Rápido
+Certifique-se de ter instalado:
+- **Node.js** 18+ ou **Bun** (recomendado)
+- **FFmpeg** - Para processamento de áudio
+- **Docker** e **Docker Compose** - Para banco de dados e CDN
+- **Git** - Para clonar o repositório
+
+#### Instalar FFmpeg:
 ```bash
-# Clonar e instalar
-git clone <repo>
-cd streamLocal
-bun install
+# Ubuntu/Debian
+sudo apt update && sudo apt install ffmpeg
 
-# Configurar banco
-cd packages/db
-cp .env.example .env
-# Editar DATABASE_URL no .env
-bun run db:migrate
+# macOS
+brew install ffmpeg
 
-# Iniciar backend
-cd ../../apps/server
-cp .env.example .env
-bun run dev
-
-# Iniciar frontend (novo terminal)
-cd ../web
-bun run dev
-
-# Iniciar nginx CDN (novo terminal)
-cd ../../docker/nginx
-docker-compose up -d
+# Verificar instalação
+ffmpeg -version
 ```
 
-### Verificação
-- Frontend: http://localhost:3000
-- Backend: http://localhost:3333
-- CDN: http://localhost:8080/cdn/
+---
+
+### 🚀 Setup Passo a Passo
+
+#### 1. Clonar o Repositório
+```bash
+git clone https://github.com/dopeeycode/streamLocal.git
+cd streamLocal
+```
+
+#### 2. Instalar Dependências
+```bash
+# Usando Bun (recomendado)
+bun install
+
+# Ou usando npm
+npm install
+```
+
+#### 3. Configurar Variáveis de Ambiente
+
+##### Backend (apps/server/.env)
+```bash
+cd apps/server
+cp .env.example .env
+```
+
+Edite o arquivo `.env`:
+```env
+# Database - PostgreSQL connection string
+DATABASE_URL="postgresql://docker:docker@localhost:5432/streamlocal?schema=public"
+
+# Authentication - MUDE EM PRODUÇÃO!
+BETTER_AUTH_SECRET="your-secret-key-here-change-in-production"
+BETTER_AUTH_URL="http://localhost:3333"
+
+# CORS - Frontend URL
+CORS_ORIGIN="http://localhost:3000"
+```
+
+##### Frontend (apps/web/.env)
+```bash
+cd ../web
+cp .env.example .env
+```
+
+O arquivo `.env` já contém o valor correto:
+```env
+# API Backend URL
+NEXT_PUBLIC_API_URL=http://localhost:3333
+```
+
+#### 4. Iniciar Banco de Dados e CDN (Docker)
+```bash
+# Voltar para a raiz do projeto
+cd ../..
+
+# Iniciar PostgreSQL e nginx
+cd packages/db
+docker-compose up -d
+
+# Verificar se os containers estão rodando
+docker ps
+```
+
+Você deve ver:
+- `streamlocal-postgres` - Porta 5432
+- `streamlocal-cdn` - Porta 8080
+
+#### 5. Executar Migrations do Prisma
+```bash
+# Ainda em packages/db
+bun run db:migrate
+
+# Ou usando npx
+npx prisma migrate deploy
+```
+
+#### 6. Iniciar o Backend (Terminal 1)
+```bash
+cd ../../apps/server
+bun run dev
+
+# Ou usando npm
+npm run dev
+```
+
+Aguarde a mensagem: `Server running on port 3333`
+
+#### 7. Iniciar o Frontend (Terminal 2)
+```bash
+# Em um novo terminal
+cd apps/web
+bun run dev
+
+# Ou usando npm
+npm run dev
+```
+
+Aguarde a mensagem: `Ready on http://localhost:3000`
+
+---
+
+### ✅ Verificação do Setup
+
+Abra seu navegador e acesse:
+
+| Serviço | URL | Status Esperado |
+|---------|-----|-----------------|
+| **Frontend** | http://localhost:3000 | Homepage do StreamLocal |
+| **Backend** | http://localhost:3333 | Retorna "OK" |
+| **CDN** | http://localhost:8080 | Nginx rodando |
+| **Database** | localhost:5432 | Postgres conectado |
+
+#### Teste Rápido:
+1. Acesse http://localhost:3000
+2. Vá para `/upload`
+3. Faça upload de um arquivo MP3
+4. Aguarde o processamento
+5. A música deve aparecer na biblioteca
+
+---
+
+### 🐛 Troubleshooting
+
+#### Porta já em uso:
+```bash
+# Verificar o que está usando a porta
+sudo lsof -i :3000  # Frontend
+sudo lsof -i :3333  # Backend
+sudo lsof -i :5432  # PostgreSQL
+sudo lsof -i :8080  # nginx
+
+# Matar processo
+kill -9 <PID>
+```
+
+#### FFmpeg não encontrado:
+```bash
+# Verificar se está no PATH
+which ffmpeg
+
+# Se não estiver, instalar conforme sistema operacional
+```
+
+#### Erro de conexão com banco:
+```bash
+# Verificar se containers estão rodando
+docker ps
+
+# Reiniciar containers
+cd packages/db
+docker-compose restart
+
+# Ver logs
+docker logs streamlocal-postgres
+```
+
+#### Erro no Prisma:
+```bash
+# Regenerar cliente Prisma
+cd packages/db
+npx prisma generate
+
+# Resetar banco (CUIDADO: apaga dados!)
+npx prisma migrate reset
+```
+
+---
+
+### 🛑 Parar os Serviços
+
+```bash
+# Parar backend/frontend (Ctrl+C nos terminais)
+
+# Parar containers Docker
+cd packages/db
+docker-compose down
+
+# Parar e remover volumes (apaga dados!)
+docker-compose down -v
+```
+
+---
+
+### 📦 Build para Produção
+
+```bash
+# Build de todos os apps
+bun run build
+
+# Ou individualmente
+cd apps/server && bun run build
+cd apps/web && bun run build
+```
 
 ---
 
