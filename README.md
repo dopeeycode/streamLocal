@@ -1,5 +1,20 @@
 # 📖 Documentação Completa do StreamLocal
 
+## 📑 Índice
+
+- [🎯 Visão Geral do Sistema](#-visão-geral-do-sistema)
+- [🌟 Principais Funcionalidades](#-principais-funcionalidades)
+- [🏗️ Arquitetura do Sistema](#️-arquitetura-do-sistema)
+- [🔄 Fluxos do Sistema](#-fluxos-do-sistema)
+- [📊 Especificações Técnicas](#-especificações-técnicas)
+- [✅ Status das Funcionalidades](#-status-das-funcionalidades)
+- [🎵 Exemplos de Uso](#-exemplos-de-uso)
+- [🔍 Manifest JSON Example](#-manifest-json-example)
+- [🛠️ Como Instalar e Executar](#️-como-instalar-e-executar)
+- [🎯 Conclusão](#-conclusão)
+
+---
+
 ## 🎯 Visão Geral do Sistema
 
 O **StreamLocal** é uma plataforma completa de streaming de áudio local, projetada para oferecer uma experiência similar ao Spotify em ambiente privado. O sistema permite upload, processamento automático e streaming otimizado de arquivos MP3 com múltiplas qualidades.
